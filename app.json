@@ -49,12 +49,6 @@
     ],
     "experiments": {
       "typedRoutes": true
-    },
-    "extra": {
-      "eas": {
-        "projectId": "your-expo-username/astra-circle13"
-      }
-    },
-    "owner": "your-expo-username"
+    }
   }
 }

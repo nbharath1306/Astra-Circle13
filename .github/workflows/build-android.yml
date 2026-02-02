@@ -34,22 +34,12 @@ jobs:
 
       - name: Setup EAS project configuration
         run: |
-          # Get Expo username
-          EXPO_USERNAME=$(npx expo whoami 2>/dev/null | tail -1)
-          echo "Expo username: $EXPO_USERNAME"
+          # Initialize EAS project - this will create a new project with proper UUID
+          # or link to existing one if slug matches
+          npx eas project:init astra-circle13 --non-interactive
           
-          # Update app.json with correct owner and project ID
-          node -e "
-          const fs = require('fs');
-          const appJson = JSON.parse(fs.readFileSync('app.json', 'utf8'));
-          appJson.expo.owner = '$EXPO_USERNAME';
-          appJson.expo.extra = appJson.expo.extra || {};
-          appJson.expo.extra.eas = { projectId: '$EXPO_USERNAME/astra-circle13' };
-          fs.writeFileSync('app.json', JSON.stringify(appJson, null, 2));
-          "
-          
-          # Initialize EAS project (creates it if doesn't exist)
-          npx eas project:init --non-interactive || echo "Project may already exist"
+          # The above command updates app.json automatically with the correct projectId
+          cat app.json | grep -A 5 "eas"
 
       - name: Create app config with environment variables
         run: |
