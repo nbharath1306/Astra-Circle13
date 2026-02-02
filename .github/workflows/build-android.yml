@@ -22,7 +22,7 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - name: Setup Expo
+      - name: Setup Expo and EAS
         uses: expo/expo-github-action@v8
         with:
           expo-version: latest
@@ -32,13 +32,26 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Android APK
-        run: eas build --platform android --profile production --non-interactive --no-wait
+      - name: Create app config with environment variables
+        run: |
+          cat > app.config.js << 'EOF'
+          export default {
+            expo: {
+              ...require('./app.json').expo,
+              extra: {
+                EXPO_PUBLIC_GEMINI_API_KEY: process.env.EXPO_PUBLIC_GEMINI_API_KEY,
+                EXPO_PUBLIC_CONVEX_URL: process.env.EXPO_PUBLIC_CONVEX_URL,
+              }
+            }
+          }
+          EOF
         env:
           EXPO_PUBLIC_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           EXPO_PUBLIC_CONVEX_URL: ${{ secrets.CONVEX_URL }}
 
-      - name: Upload APK artifact
-        if: success()
-        run: |
-          echo "Build submitted to EAS. Check https://expo.dev for build status"
+      - name: Build Android APK with EAS
+        run: eas build --platform android --profile production --non-interactive
+        env:
+          EXPO_PUBLIC_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          EXPO_PUBLIC_CONVEX_URL: ${{ secrets.CONVEX_URL }}
+
