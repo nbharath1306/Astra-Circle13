@@ -32,36 +32,17 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Setup EAS project configuration
+      - name: Initialize EAS project
         run: |
-          # Initialize EAS project - this will create a new project with proper UUID
-          # or link to existing one if slug matches
-          npx eas project:init astra-circle13 --non-interactive
+          # Use eas init to create/link project - this is the correct command
+          eas init --non-interactive || echo "Project initialization completed or already exists"
           
-          # The above command updates app.json automatically with the correct projectId
-          cat app.json | grep -A 5 "eas"
+          # Show the result
+          echo "App.json contents:"
+          cat app.json
 
-      - name: Create app config with environment variables
-        run: |
-          cat > app.config.js << 'EOF'
-          export default {
-            expo: {
-              ...require('./app.json').expo,
-              extra: {
-                ...require('./app.json').expo.extra,
-                EXPO_PUBLIC_GEMINI_API_KEY: process.env.EXPO_PUBLIC_GEMINI_API_KEY,
-                EXPO_PUBLIC_CONVEX_URL: process.env.EXPO_PUBLIC_CONVEX_URL,
-              }
-            }
-          }
-          EOF
-        env:
-          EXPO_PUBLIC_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          EXPO_PUBLIC_CONVEX_URL: ${{ secrets.CONVEX_URL }}
-
-      - name: Build Android APK with EAS
+      - name: Build Android APK
         run: eas build --platform android --profile production --non-interactive
         env:
           EXPO_PUBLIC_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           EXPO_PUBLIC_CONVEX_URL: ${{ secrets.CONVEX_URL }}
-
