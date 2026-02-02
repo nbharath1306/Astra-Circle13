@@ -32,15 +32,6 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Initialize EAS project
-        run: |
-          # Use eas init to create/link project - this is the correct command
-          eas init --non-interactive || echo "Project initialization completed or already exists"
-          
-          # Show the result
-          echo "App.json contents:"
-          cat app.json
-
       - name: Build Android APK
         run: eas build --platform android --profile production --non-interactive
         env:
