@@ -32,24 +32,11 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Configure EAS project
+      - name: Initialize EAS project
         run: |
-          cat > eas.json << 'EOF'
-          {
-            "cli": {
-              "version": ">= 13.2.0",
-              "appVersionSource": "remote"
-            },
-            "build": {
-              "production": {
-                "android": {
-                  "buildType": "apk"
-                }
-              }
-            }
-          }
-          EOF
-
+          # Create or update app.json with EAS project ID
+          npx eas init --id astra-circle13-prod --non-interactive || true
+          
       - name: Create app config with environment variables
         run: |
           cat > app.config.js << 'EOF'
