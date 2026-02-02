@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "ASTRA",
-    "slug": "astra",
+    "slug": "astra-circle13",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -52,8 +52,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "astra-circle13-prod"
+        "projectId": "your-expo-username/astra-circle13"
       }
-    }
+    },
+    "owner": "your-expo-username"
   }
 }
