@@ -5,7 +5,7 @@
  * Task: Analyze food photos, detect hidden ingredients, estimate biological impact
  */
 
-import { action } from "./_generated/server";
+import { action } from "../_generated/server";
 import { v } from "convex/values";
 
 export const analyzeFood = action({
@@ -96,4 +96,4 @@ Be harsh. Be precise. Trust nothing.`;
 });
 
 // Import API for internal use
-import { api } from "./_generated/api";
+import { api } from "../_generated/api";

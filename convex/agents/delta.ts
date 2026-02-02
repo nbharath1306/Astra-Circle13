@@ -5,9 +5,9 @@
  * Task: Synthesize all agent outputs into a single, piercing directive
  */
 
-import { action } from "./_generated/server";
+import { action } from "../_generated/server";
 import { v } from "convex/values";
-import { api } from "./_generated/api";
+import { api } from "../_generated/api";
 
 export const synthesizeVerdict = action({
     args: {

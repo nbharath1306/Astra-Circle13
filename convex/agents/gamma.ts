@@ -5,9 +5,9 @@
  * Task: Run predictive simulations of biological consequences
  */
 
-import { action } from "./_generated/server";
+import { action } from "../_generated/server";
 import { v } from "convex/values";
-import { api } from "./_generated/api";
+import { api } from "../_generated/api";
 
 export const predictConsequences = action({
     args: {

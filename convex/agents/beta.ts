@@ -5,9 +5,9 @@
  * Task: Analyze 30-day historical patterns to identify root causes of failures
  */
 
-import { action } from "./_generated/server";
+import { action } from "../_generated/server";
 import { v } from "convex/values";
-import { api } from "./_generated/api";
+import { api } from "../_generated/api";
 
 export const analyzePatterns = action({
     args: {
