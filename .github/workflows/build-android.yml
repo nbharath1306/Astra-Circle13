@@ -32,6 +32,24 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
+      - name: Configure EAS project
+        run: |
+          cat > eas.json << 'EOF'
+          {
+            "cli": {
+              "version": ">= 13.2.0",
+              "appVersionSource": "remote"
+            },
+            "build": {
+              "production": {
+                "android": {
+                  "buildType": "apk"
+                }
+              }
+            }
+          }
+          EOF
+
       - name: Create app config with environment variables
         run: |
           cat > app.config.js << 'EOF'
