@@ -106,3 +106,45 @@ Be analytical. Be strategic. Optimize the timeline.`;
         }
     },
 });
+
+export const generateMorningBriefing = action({
+    args: {},
+    handler: async (ctx) => {
+        const users = await ctx.runQuery(api.users.getAll);
+
+        for (const user of users) {
+            // Import Gemini client
+            const { GoogleGenerativeAI } = await import("@google/generative-ai");
+            const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+            if (!apiKey) continue;
+
+            const genAI = new GoogleGenerativeAI(apiKey);
+            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+
+            // Get yesterday's compliance
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+            // Mocking compliance data fetch for brevity, in real app we'd query it
+
+            const prompt = `Generate a rigorous, military-style morning briefing for User ${user.name}.
+             Focus on: Sleep discipline, nutritional strategy for the day, and mental fortitude.
+             Output JSON: { "strategy": "...", "focusArea": "..." }`;
+
+            try {
+                const result = await model.generateContent(prompt);
+                const text = result.response.text();
+                const jsonMatch = text.match(/\{[\s\S]*\}/);
+                const data = jsonMatch ? JSON.parse(jsonMatch[0]) : { strategy: "Maintain discipline.", focusArea: "General" };
+
+                // Store briefing
+                await ctx.runMutation(api.mutations.logAgent.logBriefing, {
+                    userId: user.userId,
+                    strategy: data.strategy,
+                    focusArea: data.focusArea,
+                    date: new Date().toISOString().split('T')[0]
+                });
+            } catch (e) {
+                console.error("Briefing failed for", user.userId, e);
+            }
+        }
+    }
+});

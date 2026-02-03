@@ -38,27 +38,29 @@ export const analyzeMeal = action({
             const alphaAnalysis: AlphaAnalysis = alphaResponse.metadata;
             console.log(`✅ Alpha complete: Score ${alphaAnalysis.score}/100`);
 
-            // STEP 2: Agent Beta - Pattern Analysis
-            console.log("🧠 Calling Agent Beta (The Strategist)...");
+
+            // STEP 2 & 3: PARALLEL EXECUTION - Agents Beta & Gamma
+            console.log("⚡ Initiating parallel analysis (Beta + Gamma)...");
             const mealContext = args.mealDescription || `Food with biological impact score: ${alphaAnalysis.score}`;
-            const betaResponse: BetaResponse = await ctx.runAction(api.agents.beta.analyzePatterns, {
-                userId: args.userId,
-                currentMealContext: mealContext,
-            }) as BetaResponse;
+
+            const [betaResponse, gammaResponse] = await Promise.all([
+                ctx.runAction(api.agents.beta.analyzePatterns, {
+                    userId: args.userId,
+                    currentMealContext: mealContext,
+                }) as Promise<BetaResponse>,
+                ctx.runAction(api.agents.gamma.predictConsequences, {
+                    userId: args.userId,
+                    mealDescription: mealContext,
+                    alphaScore: alphaAnalysis.score,
+                }) as Promise<GammaResponse>
+            ]);
 
             const betaAnalysis: BetaAnalysis = betaResponse.metadata;
             console.log(`✅ Beta complete: Primary cause - ${betaAnalysis.primaryCause}`);
 
-            // STEP 3: Agent Gamma - Predictive Simulation
-            console.log("🔮 Calling Agent Gamma (The Oracle)...");
-            const gammaResponse: GammaResponse = await ctx.runAction(api.agents.gamma.predictConsequences, {
-                userId: args.userId,
-                mealDescription: mealContext,
-                alphaScore: alphaAnalysis.score,
-            }) as GammaResponse;
-
             const gammaAnalysis: GammaAnalysis = gammaResponse.metadata;
             console.log(`✅ Gamma complete: ${gammaAnalysis.workoutSkipProbability}% workout skip probability`);
+
 
             // STEP 4: Agent Delta - Synthesis & Verdict
             console.log("⚔️  Calling Agent Delta (The Executioner)...");

@@ -3,17 +3,19 @@ import { colors, typography, spacing } from "@/constants/theme";
 import { useObservable } from "@legendapp/state/react";
 import { appState$ } from "@/lib/store";
 import ComplianceRing from "@/components/ComplianceRing";
-import Scanner from "@/components/Scanner"; // Renamed from FoodAnalyzer
+import Scanner from "@/components/Scanner";
 import SciFiCard from "@/components/SciFiCard";
 import { LinearGradient } from "expo-linear-gradient";
-
-// Background texture (optional, subtle noise if we had one, for now pure black + gradient)
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export default function HUDScreen() {
     const user = useObservable(appState$.user);
     const compliance = useObservable(appState$.compliance);
     const biometrics = useObservable(appState$.biometrics);
     const lastVerdict = useObservable(appState$.lastVerdict);
+
+    const briefing = useQuery(api.queries.compliance.getBriefing, user.get() ? { userId: user.get()!.userId } : "skip");
 
     const userName = user.get()?.name?.toUpperCase() || "UNIT-734";
     const todayScore = compliance.todayScore.get();
@@ -45,6 +47,15 @@ export default function HUDScreen() {
                 <View style={styles.ringSection}>
                     <ComplianceRing score={todayScore} />
                 </View>
+
+                {/* Morning Briefing (Active Defense) */}
+                {briefing && (
+                    <SciFiCard title={`STRATEGY // ${briefing.focusArea.toUpperCase()}`} style={{ marginBottom: spacing.lg }}>
+                        <Text style={styles.briefingText}>
+                            {"> " + briefing.strategy}
+                        </Text>
+                    </SciFiCard>
+                )}
 
                 {/* Shame Protocol Warning */}
                 {compliance.shameTrigger.get() && (
@@ -146,6 +157,13 @@ const styles = StyleSheet.create({
         fontSize: typography.fontSize.sm,
         color: colors.compliance.red,
         fontWeight: "bold",
+    },
+    briefingText: {
+        fontFamily: typography.fontFamily.mono,
+        fontSize: typography.fontSize.sm,
+        color: colors.text.primary,
+        lineHeight: 20,
+        marginTop: spacing.sm,
     },
     consoleText: {
         fontFamily: typography.fontFamily.mono,

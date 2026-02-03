@@ -89,4 +89,29 @@ export default defineSchema({
     })
         .index("by_userId", ["userId"])
         .index("by_timestamp", ["timestamp"]),
+
+    // Daily active defense briefings (Morning Strategy)
+    dailyBriefings: defineTable({
+        userId: v.string(),
+        date: v.string(), // YYYY-MM-DD
+        timestamp: v.number(),
+        strategy: v.string(), // Agent Beta's output
+        focusArea: v.string(), // "Sleep", "Nutrition", "Stress"
+        read: v.boolean(),
+    })
+        .index("by_userId", ["userId"])
+        .index("by_date", ["date"]),
+
+    // System notifications (Shame protocol, alerts)
+    notifications: defineTable({
+        userId: v.string(),
+        timestamp: v.number(),
+        title: v.string(),
+        body: v.string(),
+        type: v.union(v.literal("info"), v.literal("warning"), v.literal("critical")),
+        read: v.boolean(),
+        actionSchema: v.optional(v.string()), // Deep link or action
+    })
+        .index("by_userId", ["userId"])
+        .index("by_read", ["read"]),
 });

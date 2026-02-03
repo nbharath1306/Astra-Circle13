@@ -54,3 +54,21 @@ export const checkShameTrigger = query({
         return todayScore?.shameTrigger || false;
     },
 });
+
+export const getBriefing = query({
+    args: {
+        userId: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const today = new Date().toISOString().split('T')[0];
+
+        // Try getting today's briefing first
+        const briefing = await ctx.db
+            .query("dailyBriefings")
+            .withIndex("by_date", (q) => q.eq("date", today))
+            .filter((q) => q.eq(q.field("userId"), args.userId))
+            .first();
+
+        return briefing || null;
+    },
+});

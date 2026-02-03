@@ -109,3 +109,40 @@ Be cold. Be precise. Execute the directive.`;
         }
     },
 });
+
+export const nightlyAudit = action({
+    args: {},
+    handler: async (ctx) => {
+        const users = await ctx.runQuery(api.users.getAll);
+
+        for (const user of users) {
+            // Check compliance (mock logic for prototype)
+            // In real app: fetch today's compliance score
+            const isFailing = Math.random() < 0.3; // 30% chance of random audit failure for demo
+
+            if (isFailing) {
+                // Import Gemini client
+                const { GoogleGenerativeAI } = await import("@google/generative-ai");
+                const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+                if (!apiKey) continue;
+
+                const genAI = new GoogleGenerativeAI(apiKey);
+                const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+
+                const prompt = `User ${user.name} has failed their daily compliance audit. 
+                Generate a DISCIPLINARY NOTICE. Short, cold, disappointing.
+                Output plain text string.`;
+
+                const result = await model.generateContent(prompt);
+                const notice = result.response.text();
+
+                await ctx.runMutation(api.mutations.logAgent.logNotification, {
+                    userId: user.userId,
+                    title: "⚠️ AUDIT FAILED",
+                    body: notice,
+                    type: "critical"
+                });
+            }
+        }
+    }
+});

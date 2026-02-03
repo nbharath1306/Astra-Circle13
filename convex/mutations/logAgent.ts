@@ -23,3 +23,43 @@ export const log = mutation({
         });
     },
 });
+
+export const logBriefing = mutation({
+    args: {
+        userId: v.string(),
+        strategy: v.string(),
+        focusArea: v.string(),
+        date: v.string(),
+    },
+    handler: async (ctx, args) => {
+        await ctx.db.insert("dailyBriefings", {
+            userId: args.userId,
+            timestamp: Date.now(),
+            date: args.date,
+            strategy: args.strategy,
+            focusArea: args.focusArea,
+            read: false,
+        });
+    },
+});
+
+export const logNotification = mutation({
+    args: {
+        userId: v.string(),
+        title: v.string(),
+        body: v.string(),
+        type: v.union(v.literal("info"), v.literal("warning"), v.literal("critical")),
+        actionSchema: v.optional(v.string()),
+    },
+    handler: async (ctx, args) => {
+        await ctx.db.insert("notifications", {
+            userId: args.userId,
+            timestamp: Date.now(),
+            title: args.title,
+            body: args.body,
+            type: args.type,
+            read: false,
+            actionSchema: args.actionSchema,
+        });
+    },
+});
