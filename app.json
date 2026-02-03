@@ -56,7 +56,7 @@
         "origin": false
       },
       "EXPO_PUBLIC_GEMINI_API_KEY": "${process.env.EXPO_PUBLIC_GEMINI_API_KEY}",
-      "EXPO_PUBLIC_CONVEX_URL": "${process.env.EXPO_PUBLIC_CONVEX_URL}",
+      "EXPO_PUBLIC_CONVEX_URL": "https://industrious-guineapig-373.convex.cloud",
       "eas": {
         "projectId": "7e438c91-ee10-4e84-8b4a-dff9a96ff554"
       }
