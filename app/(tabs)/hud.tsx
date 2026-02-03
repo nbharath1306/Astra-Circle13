@@ -1,115 +1,91 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
-import { useState } from "react";
+import { View, Text, StyleSheet, ScrollView, StatusBar, ImageBackground } from "react-native";
 import { colors, typography, spacing } from "@/constants/theme";
 import { useObservable } from "@legendapp/state/react";
 import { appState$ } from "@/lib/store";
 import ComplianceRing from "@/components/ComplianceRing";
-import FoodAnalyzer from "@/components/FoodAnalyzer";
+import Scanner from "@/components/Scanner"; // Renamed from FoodAnalyzer
+import SciFiCard from "@/components/SciFiCard";
+import { LinearGradient } from "expo-linear-gradient";
+
+// Background texture (optional, subtle noise if we had one, for now pure black + gradient)
 
 export default function HUDScreen() {
     const user = useObservable(appState$.user);
     const compliance = useObservable(appState$.compliance);
     const biometrics = useObservable(appState$.biometrics);
     const lastVerdict = useObservable(appState$.lastVerdict);
-    const isAnalyzing = useObservable(appState$.isAnalyzing);
+
+    const userName = user.get()?.name?.toUpperCase() || "UNIT-734";
+    const todayScore = compliance.todayScore.get();
 
     return (
-        <ScrollView style={styles.container}>
-            {/* Header Status */}
-            <View style={styles.header}>
-                <Text style={styles.headerText}>SYSTEM STATUS: OPERATIONAL</Text>
-                <Text style={styles.subHeaderText}>
-                    USER: {user.get()?.name || "UNKNOWN"}
-                </Text>
-            </View>
+        <View style={styles.container}>
+            <StatusBar barStyle="light-content" />
 
-            {/* Compliance Ring */}
-            <View style={styles.ringContainer}>
-                <ComplianceRing score={compliance.todayScore.get()} />
-            </View>
+            {/* Ambient Background Gradient */}
+            <LinearGradient
+                colors={['#000000', '#101010']}
+                style={StyleSheet.absoluteFill}
+            />
 
-            {/* Biometric Data Display */}
-            <View style={styles.dataGrid}>
-                <View style={styles.dataRow}>
-                    <DataPoint
-                        label="COMPLIANCE"
-                        value={`${compliance.todayScore.get().toFixed(0)}%`}
-                        status={getComplianceStatus(compliance.todayScore.get())}
-                    />
-                    <DataPoint
-                        label="WEEKLY AVG"
-                        value={`${compliance.weeklyAverage.get().toFixed(0)}%`}
-                        status={getComplianceStatus(compliance.weeklyAverage.get())}
-                    />
+            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                {/* Header Status Bar */}
+                <View style={styles.topBar}>
+                    <View>
+                        <Text style={styles.headerLabel}>OPERATOR</Text>
+                        <Text style={styles.headerValue}>{userName}</Text>
+                    </View>
+                    <View style={{ alignItems: 'flex-end' }}>
+                        <Text style={styles.headerLabel}>SYS.STATUS</Text>
+                        <Text style={[styles.headerValue, { color: colors.compliance.green }]}>ONLINE</Text>
+                    </View>
                 </View>
-                <View style={styles.dataRow}>
-                    <DataPoint
-                        label="STRESS LVL"
-                        value={biometrics.stressLevel.get()?.toString() || "N/A"}
-                        status="neutral"
-                    />
-                    <DataPoint
-                        label="SLEEP HRS"
-                        value={biometrics.sleepHours.get()?.toString() || "N/A"}
-                        status="neutral"
-                    />
+
+                {/* Main Compliance Display */}
+                <View style={styles.ringSection}>
+                    <ComplianceRing score={todayScore} />
                 </View>
-            </View>
 
-            {/* Last Verdict */}
-            {lastVerdict.get() && (
-                <View style={styles.verdictContainer}>
-                    <Text style={styles.verdictLabel}>LAST DIRECTIVE:</Text>
-                    <Text style={styles.verdictText}>{String(lastVerdict.get())}</Text>
+                {/* Shame Protocol Warning */}
+                {compliance.shameTrigger.get() && (
+                    <SciFiCard title="⚠️ PROTOCOL VIOLATION" variant="critical">
+                        <Text style={styles.shameText}>
+                            SHAME PROTOCOL ACTIVE. SUB-OPTIMAL PERFORMANCE DETECTED.
+                            IMMEDIATE RECTIFICATION REQUIRED.
+                        </Text>
+                    </SciFiCard>
+                )}
+
+                {/* Biometrics Grid */}
+                <View style={styles.grid}>
+                    <View style={styles.col}>
+                        <SciFiCard title="STRESS EST.">
+                            <Text style={styles.metricBig}>{biometrics.stressLevel.get() || "--"}</Text>
+                            <Text style={styles.metricLabel}>CORTISOL INDEX</Text>
+                        </SciFiCard>
+                    </View>
+                    <View style={styles.col}>
+                        <SciFiCard title="SLEEP CYC.">
+                            <Text style={styles.metricBig}>{biometrics.sleepHours.get() || "--"}</Text>
+                            <Text style={styles.metricLabel}>HOURS LOGGED</Text>
+                        </SciFiCard>
+                    </View>
                 </View>
-            )}
 
-            {/* Food Analyzer */}
-            <FoodAnalyzer />
+                {/* Scanner Module */}
+                <Scanner />
 
-            {/* Shame Protocol Warning */}
-            {compliance.shameTrigger.get() && (
-                <View style={styles.shameWarning}>
-                    <Text style={styles.shameText}>
-                        ⚠️ SHAME PROTOCOL ACTIVE
+                {/* Last Directive Log */}
+                <SciFiCard title="LATEST DIRECTIVE" style={{ marginTop: spacing.md }}>
+                    <Text style={styles.consoleText}>
+                        {lastVerdict.get() ? `> ${lastVerdict.get()}` : "> AWAITING INPUT..."}
                     </Text>
-                    <Text style={styles.shameSubtext}>
-                        Compliance below 50% for 3+ days
-                    </Text>
-                </View>
-            )}
-        </ScrollView>
-    );
-}
+                </SciFiCard>
 
-// Helper component for data points
-function DataPoint({
-    label,
-    value,
-    status
-}: {
-    label: string;
-    value: string;
-    status: "optimal" | "warning" | "critical" | "neutral";
-}) {
-    const statusColor =
-        status === "optimal" ? colors.compliance.green :
-            status === "warning" ? colors.compliance.amber :
-                status === "critical" ? colors.compliance.red :
-                    colors.text.secondary;
-
-    return (
-        <View style={styles.dataPoint}>
-            <Text style={styles.dataLabel}>{label}</Text>
-            <Text style={[styles.dataValue, { color: statusColor }]}>{value}</Text>
+                <View style={{ height: 40 }} />
+            </ScrollView>
         </View>
     );
-}
-
-function getComplianceStatus(score: number): "optimal" | "warning" | "critical" {
-    if (score >= 80) return "optimal";
-    if (score >= 50) return "warning";
-    return "critical";
 }
 
 const styles = StyleSheet.create({
@@ -117,89 +93,64 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colors.background.primary,
     },
-    header: {
-        padding: spacing.md,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.ui.border,
-    },
-    headerText: {
-        fontFamily: typography.fontFamily.mono,
-        fontSize: typography.fontSize.md,
-        color: colors.compliance.green,
-        fontWeight: typography.fontWeight.bold,
-    },
-    subHeaderText: {
-        fontFamily: typography.fontFamily.mono,
-        fontSize: typography.fontSize.sm,
-        color: colors.text.secondary,
-        marginTop: spacing.xs,
-    },
-    ringContainer: {
-        alignItems: "center",
-        paddingVertical: spacing.xl,
-    },
-    dataGrid: {
+    scrollContent: {
         padding: spacing.md,
     },
-    dataRow: {
+    topBar: {
         flexDirection: "row",
         justifyContent: "space-between",
-        marginBottom: spacing.md,
+        marginBottom: spacing.lg,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.ui.border,
+        paddingBottom: spacing.sm,
     },
-    dataPoint: {
-        flex: 1,
-        padding: spacing.md,
-        backgroundColor: colors.background.secondary,
-        borderWidth: 1,
-        borderColor: colors.ui.border,
-        marginHorizontal: spacing.xs,
-    },
-    dataLabel: {
+    headerLabel: {
         fontFamily: typography.fontFamily.mono,
         fontSize: typography.fontSize.xs,
         color: colors.text.tertiary,
-        marginBottom: spacing.xs,
+        marginBottom: 2,
     },
-    dataValue: {
-        fontFamily: typography.fontFamily.mono,
-        fontSize: typography.fontSize.xl,
-        fontWeight: typography.fontWeight.bold,
-    },
-    verdictContainer: {
-        margin: spacing.md,
-        padding: spacing.md,
-        backgroundColor: colors.background.secondary,
-        borderLeftWidth: 4,
-        borderLeftColor: colors.compliance.green,
-    },
-    verdictLabel: {
-        fontFamily: typography.fontFamily.mono,
-        fontSize: typography.fontSize.xs,
-        color: colors.text.tertiary,
-        marginBottom: spacing.xs,
-    },
-    verdictText: {
+    headerValue: {
         fontFamily: typography.fontFamily.mono,
         fontSize: typography.fontSize.md,
+        fontWeight: "bold",
+        color: colors.text.primary,
+        letterSpacing: 1,
+    },
+    ringSection: {
+        alignItems: "center",
+        marginBottom: spacing.lg,
+    },
+    grid: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginBottom: spacing.xs,
+    },
+    col: {
+        width: "48%",
+    },
+    metricBig: {
+        fontFamily: typography.fontFamily.mono,
+        fontSize: typography.fontSize.xxl,
+        fontWeight: "bold",
         color: colors.text.primary,
     },
-    shameWarning: {
-        margin: spacing.md,
-        padding: spacing.md,
-        backgroundColor: colors.compliance.red,
-        borderWidth: 2,
-        borderColor: colors.compliance.red,
+    metricLabel: {
+        fontFamily: typography.fontFamily.mono,
+        fontSize: typography.fontSize.xs,
+        color: colors.text.secondary,
+        marginTop: 4,
     },
     shameText: {
         fontFamily: typography.fontFamily.mono,
-        fontSize: typography.fontSize.md,
-        color: colors.background.primary,
-        fontWeight: typography.fontWeight.bold,
-    },
-    shameSubtext: {
-        fontFamily: typography.fontFamily.mono,
         fontSize: typography.fontSize.sm,
-        color: colors.background.primary,
-        marginTop: spacing.xs,
+        color: colors.compliance.red,
+        fontWeight: "bold",
     },
+    consoleText: {
+        fontFamily: typography.fontFamily.mono,
+        fontSize: typography.fontSize.md,
+        color: colors.compliance.green,
+        lineHeight: 24,
+    }
 });

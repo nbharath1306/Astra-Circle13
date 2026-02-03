@@ -4,6 +4,7 @@ import { api } from "@/convex/_generated/api";
 import { colors, typography, spacing } from "@/constants/theme";
 import { useObservable } from "@legendapp/state/react";
 import { appState$ } from "@/lib/store";
+import SciFiCard from "@/components/SciFiCard";
 
 export default function MissionLogScreen() {
     const user = useObservable(appState$.user);
@@ -21,42 +22,48 @@ export default function MissionLogScreen() {
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.headerText}>COMMAND HISTORY</Text>
-                <Text style={styles.subHeaderText}>Last 7 days of directives</Text>
+                <Text style={styles.subHeaderText}>LOG OF PAST DIRECTIVES</Text>
             </View>
 
             <FlatList
                 data={meals || []}
                 keyExtractor={(item) => item._id}
+                contentContainerStyle={styles.listContent}
                 renderItem={({ item }) => (
-                    <View style={[
-                        styles.logEntry,
-                        { borderLeftColor: item.approved ? colors.compliance.green : colors.compliance.red }
-                    ]}>
+                    <SciFiCard
+                        title={new Date(item.timestamp).toLocaleDateString()}
+                        variant={item.approved ? "default" : "critical"}
+                    >
                         <View style={styles.logHeader}>
                             <Text style={[
                                 styles.verdict,
                                 { color: item.approved ? colors.compliance.green : colors.compliance.red }
                             ]}>
-                                {item.approved ? "✓ APPROVED" : "✗ REJECTED"}
+                                {item.approved ? "ACCESS GRANTED" : "ACCESS DENIED"}
                             </Text>
                             <Text style={styles.timestamp}>
-                                {new Date(item.timestamp).toLocaleString()}
+                                {new Date(item.timestamp).toLocaleTimeString()}
                             </Text>
                         </View>
 
-                        <Text style={styles.command}>{item.agentVerdict}</Text>
+                        <Text style={styles.command}>
+                            {"> " + item.agentVerdict}
+                        </Text>
 
                         {item.biologicalImpactScore !== undefined && (
-                            <Text style={styles.score}>
-                                Impact Score: {item.biologicalImpactScore}/100
-                            </Text>
+                            <View style={styles.scoreContainer}>
+                                <Text style={styles.scoreLabel}>BIO-IMPACT:</Text>
+                                <Text style={styles.scoreValue}>
+                                    {item.biologicalImpactScore} / 100
+                                </Text>
+                            </View>
                         )}
-                    </View>
+                    </SciFiCard>
                 )}
                 ListEmptyComponent={
                     <View style={styles.empty}>
-                        <Text style={styles.emptyText}>NO MISSION DATA</Text>
-                        <Text style={styles.emptySubtext}>Begin by analyzing food</Text>
+                        <Text style={styles.emptyText}>NO DATA LOGGED</Text>
+                        <Text style={styles.emptySubtext}>INITIATE SCAN PROTOCOL</Text>
                     </View>
                 }
             />
@@ -69,28 +76,27 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colors.background.primary,
     },
+    listContent: {
+        padding: spacing.md,
+    },
     header: {
         padding: spacing.md,
         borderBottomWidth: 1,
         borderBottomColor: colors.ui.border,
+        backgroundColor: colors.background.secondary,
     },
     headerText: {
         fontFamily: typography.fontFamily.mono,
         fontSize: typography.fontSize.md,
         color: colors.compliance.green,
-        fontWeight: typography.fontWeight.bold,
+        fontWeight: "bold",
+        letterSpacing: 2,
     },
     subHeaderText: {
         fontFamily: typography.fontFamily.mono,
-        fontSize: typography.fontSize.sm,
+        fontSize: typography.fontSize.xs,
         color: colors.text.tertiary,
-        marginTop: spacing.xs,
-    },
-    logEntry: {
-        margin: spacing.md,
-        padding: spacing.md,
-        backgroundColor: colors.background.secondary,
-        borderLeftWidth: 4,
+        marginTop: 2,
     },
     logHeader: {
         flexDirection: "row",
@@ -99,8 +105,8 @@ const styles = StyleSheet.create({
     },
     verdict: {
         fontFamily: typography.fontFamily.mono,
-        fontSize: typography.fontSize.sm,
-        fontWeight: typography.fontWeight.bold,
+        fontSize: typography.fontSize.xs,
+        fontWeight: "bold",
     },
     timestamp: {
         fontFamily: typography.fontFamily.mono,
@@ -111,26 +117,42 @@ const styles = StyleSheet.create({
         fontFamily: typography.fontFamily.mono,
         fontSize: typography.fontSize.md,
         color: colors.text.primary,
-        marginBottom: spacing.sm,
+        marginBottom: spacing.md,
+        lineHeight: 22,
     },
-    score: {
+    scoreContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderTopWidth: 1,
+        borderTopColor: colors.ui.border,
+        paddingTop: spacing.xs,
+    },
+    scoreLabel: {
         fontFamily: typography.fontFamily.mono,
         fontSize: typography.fontSize.xs,
         color: colors.text.secondary,
+        marginRight: spacing.sm,
+    },
+    scoreValue: {
+        fontFamily: typography.fontFamily.mono,
+        fontSize: typography.fontSize.sm,
+        color: colors.text.accent,
+        fontWeight: "bold",
     },
     empty: {
         padding: spacing.xl,
         alignItems: "center",
+        opacity: 0.5,
     },
     emptyText: {
         fontFamily: typography.fontFamily.mono,
         fontSize: typography.fontSize.lg,
         color: colors.text.tertiary,
+        marginBottom: spacing.xs,
     },
     emptySubtext: {
         fontFamily: typography.fontFamily.mono,
-        fontSize: typography.fontSize.sm,
+        fontSize: typography.fontSize.xs,
         color: colors.text.tertiary,
-        marginTop: spacing.xs,
     },
 });

@@ -1,99 +1,120 @@
 // Theme constants for ASTRA Bio-Metric HUD
-// High-density, military-grade UI design
+// High-fidelity, military-grade UI design
+// Billion-dollar visuals
 
 export const colors = {
-    // Compliance States
+    // Compliance States (High luminance neon)
     compliance: {
-        green: "#00FF41",      // Optimal
-        amber: "#FFB800",      // Warning
-        red: "#FF0033",        // Critical
+        green: "#00FF41",      // Optimal (Matrix Green)
+        greenDim: "rgba(0, 255, 65, 0.2)",
+        amber: "#FFB000",      // Warning (Safety Orange/Yellow)
+        amberDim: "rgba(255, 176, 0, 0.2)",
+        red: "#FF2A2A",        // Critical (Alert Red)
+        redDim: "rgba(255, 42, 42, 0.2)",
     },
 
-    // Background
+    // Background (OLED Black depth)
     background: {
         primary: "#000000",
-        secondary: "#0A0A0A",
-        tertiary: "#141414",
+        secondary: "#080808",  // Subtle elevation
+        tertiary: "#121212",   // Card background
+        overlay: "rgba(0, 0, 0, 0.85)",
     },
 
-    // Text
+    // Text & Accents
     text: {
         primary: "#FFFFFF",
-        secondary: "#A0A0A0",
-        tertiary: "#606060",
+        secondary: "#B0B0B0",
+        tertiary: "#505050",
+        muted: "#333333",
         accent: "#00FF41",
     },
 
     // UI Elements
     ui: {
-        border: "#1A1A1A",
+        border: "#1C1C1C",
+        borderHighlight: "#333333",
         borderActive: "#00FF41",
-        overlay: "rgba(0, 0, 0, 0.8)",
+        scanline: "rgba(0, 255, 65, 0.05)",
     },
 };
 
 export const typography = {
-    // Font families (will use system fonts for now)
+    // Font families
     fontFamily: {
-        mono: "Courier New",
+        mono: "Courier New",  // Classic terminal feel
         sans: "System",
     },
 
     // Font sizes (high-density display)
     fontSize: {
-        xs: 10,
-        sm: 12,
-        md: 14,
-        lg: 16,
-        xl: 20,
-        xxl: 28,
-        xxxl: 36,
+        xs: 11,
+        sm: 13,
+        md: 15,
+        lg: 18,
+        xl: 24,
+        xxl: 32,
+        xxxl: 48,
+        display: 64,
     },
 
     // Font weights
     fontWeight: {
         regular: "400" as const,
         medium: "500" as const,
-        semibold: "600" as const,
         bold: "700" as const,
+        black: "900" as const,
     },
+
+    letterSpacing: {
+        tight: -0.5,
+        normal: 0,
+        wide: 1.5, // For headers
+    }
 };
 
 export const spacing = {
+    xxs: 2,
     xs: 4,
     sm: 8,
     md: 16,
     lg: 24,
     xl: 32,
     xxl: 48,
+    xxxl: 64,
 };
 
 export const layout = {
     // Compliance Ring
     complianceRing: {
-        size: 200,
-        strokeWidth: 12,
-        pulseSpeed: 2000, // ms
+        size: 240,
+        strokeWidth: 2,
+        activeStrokeWidth: 8,
+        glowRadius: 10,
     },
 
-    // Mission Log
-    missionLog: {
-        itemHeight: 80,
-        maxVisible: 10,
-    },
+    borderRadius: {
+        sm: 4,
+        md: 8,
+        lg: 16,
+        pill: 9999,
+    }
 };
 
 export const animation = {
     // Durations
     duration: {
-        fast: 150,
-        normal: 300,
-        slow: 500,
+        instant: 0,
+        fast: 200,
+        normal: 400,
+        slow: 800,
+        pulse: 2000,
     },
 
     // Easing
     easing: {
-        default: "ease-in-out",
+        default: "cubic-bezier(0.4, 0.0, 0.2, 1)", // Standard ease-in-out
+        outBack: "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
         sharp: "cubic-bezier(0.4, 0.0, 0.6, 1)",
     },
 };

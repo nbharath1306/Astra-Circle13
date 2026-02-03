@@ -4,6 +4,7 @@ import { api } from "@/convex/_generated/api";
 import { colors, typography, spacing } from "@/constants/theme";
 import { useObservable } from "@legendapp/state/react";
 import { appState$ } from "@/lib/store";
+import SciFiCard from "@/components/SciFiCard";
 
 export default function AnalyticsScreen() {
     const user = useObservable(appState$.user);
@@ -17,7 +18,7 @@ export default function AnalyticsScreen() {
         } : "skip"
     );
 
-    const averageScore = complianceScores
+    const averageScore = complianceScores && complianceScores.length > 0
         ? complianceScores.reduce((sum: number, s: { score: number }) => sum + s.score, 0) / complianceScores.length
         : 0;
 
@@ -34,84 +35,69 @@ export default function AnalyticsScreen() {
         : 0;
 
     return (
-        <ScrollView style={styles.container}>
+        <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.headerText}>7-DAY PERFORMANCE ANALYSIS</Text>
+                <Text style={styles.headerText}>PERFORMANCE ANALYSIS</Text>
+                <Text style={styles.subHeaderText}>T-MINUS 7 DAY REPORT</Text>
             </View>
 
-            {/* Summary Stats */}
-            <View style={styles.statsGrid}>
-                <StatCard
-                    label="AVG COMPLIANCE"
-                    value={`${averageScore.toFixed(1)}%`}
-                    status={getStatus(averageScore)}
-                />
-                <StatCard
-                    label="TOTAL MEALS"
-                    value={totalMeals.toString()}
-                    status="neutral"
-                />
-                <StatCard
-                    label="APPROVED"
-                    value={totalApproved.toString()}
-                    status="optimal"
-                />
-                <StatCard
-                    label="REJECTED"
-                    value={totalRejected.toString()}
-                    status="critical"
-                />
-            </View>
-
-            {/* Daily Breakdown */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>DAILY BREAKDOWN</Text>
-                {complianceScores?.map((day: { date: string; score: number; mealsApproved: number; mealsLogged: number }) => (
-                    <View key={day.date} style={styles.dayRow}>
-                        <Text style={styles.date}>{day.date}</Text>
-                        <View style={styles.dayStats}>
-                            <Text style={[
-                                styles.dayScore,
-                                { color: getStatusColor(day.score) }
-                            ]}>
-                                {day.score.toFixed(0)}%
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+                {/* Summary Stats */}
+                <View style={styles.statsGrid}>
+                    <View style={styles.col}>
+                        <SciFiCard title="AVG COMPLIANCE" variant={getStatus(averageScore)}>
+                            <Text style={[styles.statValue, { color: getStatusColor(averageScore) }]}>
+                                {averageScore.toFixed(1)}%
                             </Text>
-                            <Text style={styles.dayMeals}>
-                                {day.mealsApproved}/{day.mealsLogged} meals
-                            </Text>
-                        </View>
+                        </SciFiCard>
+                        <SciFiCard title="TOTAL INPUTS">
+                            <Text style={styles.statValue}>{totalMeals}</Text>
+                        </SciFiCard>
                     </View>
+                    <View style={styles.col}>
+                        <SciFiCard title="APPROVED" variant="default">
+                            <Text style={[styles.statValue, { color: colors.compliance.green }]}>
+                                {totalApproved}
+                            </Text>
+                        </SciFiCard>
+                        <SciFiCard title="REJECTED" variant="critical">
+                            <Text style={[styles.statValue, { color: colors.compliance.red }]}>
+                                {totalRejected}
+                            </Text>
+                        </SciFiCard>
+                    </View>
+                </View>
+
+                {/* Daily Breakdown */}
+                <Text style={styles.sectionTitle}>TEMPORAL LOG</Text>
+
+                {complianceScores?.map((day: { date: string; score: number; mealsApproved: number; mealsLogged: number }) => (
+                    <SciFiCard key={day.date} style={styles.dayCard}>
+                        <View style={styles.dayRow}>
+                            <View>
+                                <Text style={styles.date}>{day.date}</Text>
+                                <Text style={styles.dayMeals}>
+                                    LOGGED: {day.mealsLogged} | OK: {day.mealsApproved}
+                                </Text>
+                            </View>
+                            <View style={styles.dayStats}>
+                                <Text style={[
+                                    styles.dayScore,
+                                    { color: getStatusColor(day.score) }
+                                ]}>
+                                    {day.score.toFixed(0)}%
+                                </Text>
+                            </View>
+                        </View>
+                    </SciFiCard>
                 ))}
-            </View>
-        </ScrollView>
-    );
-}
-
-function StatCard({
-    label,
-    value,
-    status
-}: {
-    label: string;
-    value: string;
-    status: "optimal" | "warning" | "critical" | "neutral";
-}) {
-    const statusColor = getStatusColor(
-        status === "optimal" ? 90 :
-            status === "warning" ? 60 :
-                status === "critical" ? 30 : 50
-    );
-
-    return (
-        <View style={styles.statCard}>
-            <Text style={styles.statLabel}>{label}</Text>
-            <Text style={[styles.statValue, { color: statusColor }]}>{value}</Text>
+            </ScrollView>
         </View>
     );
 }
 
-function getStatus(score: number): "optimal" | "warning" | "critical" {
-    if (score >= 80) return "optimal";
+function getStatus(score: number): "default" | "warning" | "critical" {
+    if (score >= 80) return "default"; // Green is default border
     if (score >= 50) return "warning";
     return "critical";
 }
@@ -127,76 +113,75 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colors.background.primary,
     },
+    scrollContent: {
+        padding: spacing.md,
+    },
     header: {
         padding: spacing.md,
         borderBottomWidth: 1,
         borderBottomColor: colors.ui.border,
+        backgroundColor: colors.background.secondary,
     },
     headerText: {
         fontFamily: typography.fontFamily.mono,
         fontSize: typography.fontSize.md,
         color: colors.compliance.green,
-        fontWeight: typography.fontWeight.bold,
+        fontWeight: "bold",
+        letterSpacing: 2,
     },
-    statsGrid: {
-        flexDirection: "row",
-        flexWrap: "wrap",
-        padding: spacing.md,
-    },
-    statCard: {
-        width: "48%",
-        padding: spacing.md,
-        margin: "1%",
-        backgroundColor: colors.background.secondary,
-        borderWidth: 1,
-        borderColor: colors.ui.border,
-    },
-    statLabel: {
+    subHeaderText: {
         fontFamily: typography.fontFamily.mono,
         fontSize: typography.fontSize.xs,
         color: colors.text.tertiary,
-        marginBottom: spacing.xs,
+        marginTop: 2,
+    },
+    statsGrid: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginBottom: spacing.lg,
+    },
+    col: {
+        width: "48%",
     },
     statValue: {
         fontFamily: typography.fontFamily.mono,
-        fontSize: typography.fontSize.xl,
-        fontWeight: typography.fontWeight.bold,
-    },
-    section: {
-        padding: spacing.md,
+        fontSize: typography.fontSize.xxl,
+        fontWeight: "bold",
+        color: colors.text.primary,
     },
     sectionTitle: {
         fontFamily: typography.fontFamily.mono,
-        fontSize: typography.fontSize.sm,
+        fontSize: typography.fontSize.xs,
         color: colors.text.tertiary,
         marginBottom: spacing.md,
+        letterSpacing: 2,
+    },
+    dayCard: {
+        marginBottom: spacing.sm,
     },
     dayRow: {
         flexDirection: "row",
         justifyContent: "space-between",
-        padding: spacing.md,
-        backgroundColor: colors.background.secondary,
-        borderWidth: 1,
-        borderColor: colors.ui.border,
-        marginBottom: spacing.sm,
+        alignItems: "center",
     },
     date: {
         fontFamily: typography.fontFamily.mono,
         fontSize: typography.fontSize.sm,
-        color: colors.text.secondary,
+        color: colors.text.primary,
+        fontWeight: "bold",
+    },
+    dayMeals: {
+        fontFamily: typography.fontFamily.mono,
+        fontSize: typography.fontSize.xs,
+        color: colors.text.tertiary,
+        marginTop: 4,
     },
     dayStats: {
         alignItems: "flex-end",
     },
     dayScore: {
         fontFamily: typography.fontFamily.mono,
-        fontSize: typography.fontSize.md,
-        fontWeight: typography.fontWeight.bold,
-    },
-    dayMeals: {
-        fontFamily: typography.fontFamily.mono,
-        fontSize: typography.fontSize.xs,
-        color: colors.text.tertiary,
-        marginTop: spacing.xs,
+        fontSize: typography.fontSize.lg,
+        fontWeight: "bold",
     },
 });
