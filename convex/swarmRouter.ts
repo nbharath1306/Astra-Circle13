@@ -7,6 +7,14 @@
 import { action } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
+import { Id } from "./_generated/dataModel";
+import {
+    AlphaResponse, AlphaAnalysis,
+    BetaResponse, BetaAnalysis,
+    GammaResponse, GammaAnalysis,
+    DeltaResponse, DeltaAnalysis,
+    BiometricsData
+} from "./types";
 
 export const analyzeMeal = action({
     args: {
@@ -22,50 +30,50 @@ export const analyzeMeal = action({
 
             // STEP 1: Agent Alpha - Visual Analysis
             console.log("👁️  Calling Agent Alpha (The Auditor)...");
-            const alphaResponse = await ctx.runAction(api.agents.alpha.analyzeFood, {
+            const alphaResponse: AlphaResponse = await ctx.runAction(api.agents.alpha.analyzeFood, {
                 userId: args.userId,
                 photoBase64: args.photoBase64,
-            });
+            }) as AlphaResponse;
 
-            const alphaAnalysis = alphaResponse.metadata;
+            const alphaAnalysis: AlphaAnalysis = alphaResponse.metadata;
             console.log(`✅ Alpha complete: Score ${alphaAnalysis.score}/100`);
 
             // STEP 2: Agent Beta - Pattern Analysis
             console.log("🧠 Calling Agent Beta (The Strategist)...");
             const mealContext = args.mealDescription || `Food with biological impact score: ${alphaAnalysis.score}`;
-            const betaResponse = await ctx.runAction(api.agents.beta.analyzePatterns, {
+            const betaResponse: BetaResponse = await ctx.runAction(api.agents.beta.analyzePatterns, {
                 userId: args.userId,
                 currentMealContext: mealContext,
-            });
+            }) as BetaResponse;
 
-            const betaAnalysis = betaResponse.metadata;
+            const betaAnalysis: BetaAnalysis = betaResponse.metadata;
             console.log(`✅ Beta complete: Primary cause - ${betaAnalysis.primaryCause}`);
 
             // STEP 3: Agent Gamma - Predictive Simulation
             console.log("🔮 Calling Agent Gamma (The Oracle)...");
-            const gammaResponse = await ctx.runAction(api.agents.gamma.predictConsequences, {
+            const gammaResponse: GammaResponse = await ctx.runAction(api.agents.gamma.predictConsequences, {
                 userId: args.userId,
                 mealDescription: mealContext,
                 alphaScore: alphaAnalysis.score,
-            });
+            }) as GammaResponse;
 
-            const gammaAnalysis = gammaResponse.metadata;
+            const gammaAnalysis: GammaAnalysis = gammaResponse.metadata;
             console.log(`✅ Gamma complete: ${gammaAnalysis.workoutSkipProbability}% workout skip probability`);
 
             // STEP 4: Agent Delta - Synthesis & Verdict
             console.log("⚔️  Calling Agent Delta (The Executioner)...");
-            const deltaResponse = await ctx.runAction(api.agents.delta.synthesizeVerdict, {
+            const deltaResponse: DeltaResponse = await ctx.runAction(api.agents.delta.synthesizeVerdict, {
                 userId: args.userId,
                 alphaOutput: JSON.stringify(alphaAnalysis),
                 betaOutput: JSON.stringify(betaAnalysis),
                 gammaOutput: JSON.stringify(gammaAnalysis),
-            });
+            }) as DeltaResponse;
 
-            const deltaAnalysis = deltaResponse.metadata;
+            const deltaAnalysis: DeltaAnalysis = deltaResponse.metadata;
             console.log(`✅ Delta complete: ${deltaAnalysis.verdict}`);
 
             // STEP 5: Record the meal in the database
-            const mealId = await ctx.runMutation(api.mutations.meals.create, {
+            const mealId: Id<"meals"> = await ctx.runMutation(api.mutations.meals.create, {
                 userId: args.userId,
                 photoBase64: args.photoBase64,
                 biologicalImpactScore: alphaAnalysis.score,
@@ -114,9 +122,9 @@ export const handleVoiceInput = action({
     handler: async (ctx, args) => {
         try {
             // Get current biometrics
-            const biometrics = await ctx.runQuery(api.queries.getUserHistory.getLatestBiometrics, {
+            const biometrics: BiometricsData | null = await ctx.runQuery(api.queries.getUserHistory.getLatestBiometrics, {
                 userId: args.userId,
-            });
+            }) as BiometricsData | null;
 
             // Use Agent Delta for voice responses (cold, professional tone)
             const { GoogleGenerativeAI } = await import("@google/generative-ai");

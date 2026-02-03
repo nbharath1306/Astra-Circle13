@@ -4,10 +4,16 @@
  * Color transitions: Green (optimal) -> Amber (warning) -> Red (critical)
  */
 
-import { Canvas, Circle, Group, Paint, Skia } from "@shopify/react-native-skia";
+import { Canvas, Path, Skia, Group } from "@shopify/react-native-skia";
 import { View, Text, StyleSheet } from "react-native";
 import { useEffect } from "react";
-import { useSharedValue, withRepeat, withTiming, Easing } from "react-native-reanimated";
+import Animated, {
+    useSharedValue,
+    withRepeat,
+    withTiming,
+    Easing,
+    useAnimatedStyle,
+} from "react-native-reanimated";
 import { colors, typography, layout } from "@/constants/theme";
 
 interface ComplianceRingProps {
@@ -29,55 +35,73 @@ export default function ComplianceRing({ score }: ComplianceRingProps) {
     const ringColor = getColor(score);
     const progress = score / 100;
 
-    // Pulse animation
+    // Create arc path for progress ring
+    const createArcPath = (progressValue: number) => {
+        const path = Skia.Path.Make();
+        const startAngle = -90; // Start from top
+        const sweepAngle = 360 * progressValue;
+
+        path.addArc(
+            { x: center - radius, y: center - radius, width: radius * 2, height: radius * 2 },
+            startAngle,
+            sweepAngle
+        );
+
+        return path;
+    };
+
+    const backgroundPath = createArcPath(1);
+    const progressPath = createArcPath(progress);
+
+    // Pulse animation for center text
     const pulse = useSharedValue(1);
 
     useEffect(() => {
         pulse.value = withRepeat(
-            withTiming(1.1, {
+            withTiming(1.05, {
                 duration: layout.complianceRing.pulseSpeed,
                 easing: Easing.inOut(Easing.ease),
             }),
             -1,
             true
         );
-    }, []);
+    }, [pulse]);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: pulse.value }],
+    }));
 
     return (
         <View style={styles.container}>
             <Canvas style={{ width: size, height: size }}>
                 <Group>
                     {/* Background ring */}
-                    <Circle
-                        cx={center}
-                        cy={center}
-                        r={radius}
+                    <Path
+                        path={backgroundPath}
                         style="stroke"
                         strokeWidth={strokeWidth}
                         color={colors.ui.border}
+                        strokeCap="round"
                     />
 
                     {/* Progress ring */}
-                    <Circle
-                        cx={center}
-                        cy={center}
-                        r={radius}
+                    <Path
+                        path={progressPath}
                         style="stroke"
                         strokeWidth={strokeWidth}
                         color={ringColor}
-                        start={0}
-                        end={progress}
+                        strokeCap="round"
                     />
                 </Group>
             </Canvas>
 
             {/* Center text */}
-            <View style={styles.centerText}>
+            <Animated.View style={[styles.centerText, animatedStyle]}>
                 <Text style={[styles.scoreText, { color: ringColor }]}>
                     {score.toFixed(0)}%
                 </Text>
                 <Text style={styles.labelText}>COMPLIANCE</Text>
-            </View>
+            </Animated.View>
         </View>
     );
 }

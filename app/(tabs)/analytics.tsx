@@ -18,19 +18,19 @@ export default function AnalyticsScreen() {
     );
 
     const averageScore = complianceScores
-        ? complianceScores.reduce((sum, s) => sum + s.score, 0) / complianceScores.length
+        ? complianceScores.reduce((sum: number, s: { score: number }) => sum + s.score, 0) / complianceScores.length
         : 0;
 
     const totalMeals = complianceScores
-        ? complianceScores.reduce((sum, s) => sum + s.mealsLogged, 0)
+        ? complianceScores.reduce((sum: number, s: { mealsLogged: number }) => sum + s.mealsLogged, 0)
         : 0;
 
     const totalApproved = complianceScores
-        ? complianceScores.reduce((sum, s) => sum + s.mealsApproved, 0)
+        ? complianceScores.reduce((sum: number, s: { mealsApproved: number }) => sum + s.mealsApproved, 0)
         : 0;
 
     const totalRejected = complianceScores
-        ? complianceScores.reduce((sum, s) => sum + s.mealsRejected, 0)
+        ? complianceScores.reduce((sum: number, s: { mealsRejected: number }) => sum + s.mealsRejected, 0)
         : 0;
 
     return (
@@ -66,7 +66,7 @@ export default function AnalyticsScreen() {
             {/* Daily Breakdown */}
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>DAILY BREAKDOWN</Text>
-                {complianceScores?.map((day) => (
+                {complianceScores?.map((day: { date: string; score: number; mealsApproved: number; mealsLogged: number }) => (
                     <View key={day.date} style={styles.dayRow}>
                         <Text style={styles.date}>{day.date}</Text>
                         <View style={styles.dayStats}>

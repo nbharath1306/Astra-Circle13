@@ -56,8 +56,8 @@ async function checkShameProtocol(ctx: any, userId: string) {
 
     const recentScores = await ctx.db
         .query("complianceScores")
-        .withIndex("by_userId", (q) => q.eq("userId", userId))
-        .filter((q: any) => q.gte(q.field("date"), threeDaysAgoStr))
+        .withIndex("by_userId", (q: { eq: (field: string, value: string) => unknown }) => q.eq("userId", userId))
+        .filter((q: { gte: (a: unknown, b: string) => unknown; field: (name: string) => unknown }) => q.gte(q.field("date"), threeDaysAgoStr))
         .collect();
 
     const lowScoreDays = recentScores.filter((s: any) => s.score < 50).length;

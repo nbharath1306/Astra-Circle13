@@ -60,7 +60,7 @@ export default function HUDScreen() {
             {lastVerdict.get() && (
                 <View style={styles.verdictContainer}>
                     <Text style={styles.verdictLabel}>LAST DIRECTIVE:</Text>
-                    <Text style={styles.verdictText}>{lastVerdict.get()}</Text>
+                    <Text style={styles.verdictText}>{String(lastVerdict.get())}</Text>
                 </View>
             )}
 

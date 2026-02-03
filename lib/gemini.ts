@@ -2,14 +2,20 @@
 // This file provides helper functions for interacting with different Gemini models
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import Constants from "expo-constants";
+
+// Get API key from Expo Constants (set via app.json extra or env vars)
+const getApiKey = (): string => {
+    const apiKey = Constants.expoConfig?.extra?.EXPO_PUBLIC_GEMINI_API_KEY;
+    if (!apiKey) {
+        throw new Error("EXPO_PUBLIC_GEMINI_API_KEY is not configured in app.json extra");
+    }
+    return apiKey;
+};
 
 // Initialize the Gemini API client
 const getGeminiClient = () => {
-    const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) {
-        throw new Error("EXPO_PUBLIC_GEMINI_API_KEY is not set");
-    }
-    return new GoogleGenerativeAI(apiKey);
+    return new GoogleGenerativeAI(getApiKey());
 };
 
 // Agent Alpha: Gemini 2.0 Flash (Vision)
