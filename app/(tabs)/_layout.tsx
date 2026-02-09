@@ -11,7 +11,7 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: '#000',
           borderTopColor: '#333',
-          platform: Platform.OS === 'ios' ? 'absolute' : 'relative',
+          position: Platform.OS === 'ios' ? 'absolute' : 'relative',
         },
         tabBarActiveTintColor: '#0F0',
         tabBarInactiveTintColor: '#555',

@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../convex/_generated/api';
+import { useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 import React from 'react';
 
 export default function HUD() {
